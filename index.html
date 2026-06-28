@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<style>
+
+<title>Daily KPI Tool Ver1.2</title>
+
+input[type="time"]{
+
+    padding:8px;
+
+    font-size:16px;
+
+    margin-top:5px;
+
+    margin-bottom:10px;
+
+}
+
+body{
+
+    margin:20px;
+    background:#f5f5f5;
+    font-family:sans-serif;
+
+}
+
+h1{
+
+    text-align:center;
+    color:#1565C0;
+
+}
+
+.card{
+
+    background:white;
+
+    border-radius:12px;
+
+    padding:15px;
+
+    margin-bottom:20px;
+
+    box-shadow:0 2px 8px rgba(0,0,0,0.15);
+
+}
+
+h2{
+
+    margin-top:0;
+
+    color:#333;
+
+}
+
+textarea{
+
+    width:100%;
+
+    height:260px;
+
+    resize:vertical;
+
+    font-size:15px;
+
+    padding:10px;
+
+    box-sizing:border-box;
+
+}
+
+button{
+
+    width:100%;
+
+    padding:15px;
+
+    font-size:18px;
+
+    border:none;
+
+    border-radius:10px;
+
+    margin-top:10px;
+
+    cursor:pointer;
+
+}
+
+#calcBtn{
+
+    background:#1976D2;
+
+    color:white;
+
+}
+
+.copyBtn{
+
+    background:#43A047;
+
+    color:white;
+
+}
+
+.output{
+
+    background:#ECEFF1;
+
+    border-radius:10px;
+
+    padding:10px;
+
+    min-height:180px;
+
+    white-space:pre-wrap;
+
+    font-family:monospace;
+
+}
+
+#message{
+
+    text-align:center;
+
+    color:green;
+
+    font-weight:bold;
+
+    height:24px;
+
+}
+
+footer{
+
+    margin-top:30px;
+
+    text-align:center;
+
+    color:gray;
+
+    font-size:12px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>📊 Daily KPI Tool</h1>
+
+<div class="card">
+
+<h2>入力</h2>
+
+<label for="reportTime">
+集計時刻
+</label>
+
+<input
+id="reportTime"
+type="time"
+value="16:00">
+
+<br><br>
+
+<textarea
+id="input"
+placeholder="ここへ業務システムの文章を貼り付け"></textarea>
+
+<button
+id="calcBtn"
+onclick="calc()">
+
+計算
+
+</button>
+
+<button
+onclick="clearInput()">
+
+🗑 入力をクリア
+
+</button>
+
+</div>
+
+<div
+id="message">
+</div>
+
+<div class="card">
+
+<h2>単日付帯率</h2>
+
+<div
+class="output"
+id="output1">
+
+計算待ち...
+
+</div>
+
+<button
+class="copyBtn"
+onclick="copyOutput('output1')">
+
+📋 単日付帯率をコピー
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>単日注力KPI</h2>
+
+<div
+class="output"
+id="output2">
+
+計算待ち...
+
+</div>
+
+<button
+class="copyBtn"
+onclick="copyOutput('output2')">
+
+📋 単日注力KPIをコピー
+
+</button>
+
+</div>
+
+<footer>
+
+Daily KPI Tool Ver1.2<br>
+Created by 2174 kame ✨
+
+</footer>
+
+<script>
+//==========================
+// KPI設定
+//==========================
+
+const KPI = [
+    { name: "カケホ", rate: 35 },
+    { name: "最強保護", rate: 30 },
+    { name: "U-NEXT", rate: 13 }
+];
+
+//==========================
+// メイン処理
+//==========================
+
+function calc() {
+
+    const text = document.getElementById("input").value;
+
+    try{
+
+        //==========================
+        // データ取得
+        //==========================
+
+        const sim = getData(text,"SIM");
+
+        const result = [];
+
+        //==========================
+        // KPI計算
+        //==========================
+
+        for(const item of KPI){
+
+            const data = getData(text,item.name);
+
+            const rate =
+                sim.actual == 0
+                ? 0
+                : data.actual / sim.actual * 100;
+
+            const need =
+                Math.ceil(sim.actual * item.rate / 100);
+
+            const remain =
+                need - data.actual;
+
+            const gap =
+                rate - item.rate;
+
+            result.push({
+
+                name:item.name,
+
+                target:data.target,
+
+                actual:data.actual,
+
+                rate:rate,
+
+                targetRate:item.rate,
+
+                gap:gap,
+
+                remain:remain
+
+            });
+
+        }
+
+        //==========================
+        // 出力
+        //==========================
+
+        makeOutput1(result, text);
+
+        makeOutput2(result, text);
+
+        showMessage("✅ 計算完了！");
+        document
+		.getElementById("input")
+		.focus();
+
+    }
+    catch(e){
+
+        showMessage("❌ " + e.message);
+
+        console.log(e);
+
+    }
+
+}
+
+//==========================
+// データ取得
+//==========================
+
+function getData(text,name){
+
+    const targetMatch =
+        text.match(
+            new RegExp(name + "目標(\\d+)件")
+        );
+
+    const remainMatch =
+        text.match(
+            new RegExp(
+                name +
+                "目標\\d+件☆\\s*残([+]?\\d+)件"
+            )
+        );
+
+    if(!targetMatch){
+
+        throw new Error(
+        	name + " が見つかりません"
+        );
+
+    }
+
+    if(!remainMatch){
+
+        throw new Error(
+        	name + " が見つかりません"
+        );
+
+    }
+
+    const target =
+        Number(targetMatch[1]);
+
+    const remainText = remainMatch[1];
+
+let remain;
+let actual;
+
+if (remainText.startsWith("+")) {
+
+    remain = Number(remainText.substring(1));
+
+    actual = target + remain;
+
+} else {
+
+    remain = Number(remainText);
+
+    actual = target - remain;
+
+}
+
+return{
+
+    target:target,
+
+    remain:remain,
+
+    actual:actual
+
+};
+
+}
+
+//==========================
+// メッセージ
+//==========================
+
+function showMessage(message){
+
+    const msg =
+        document.getElementById("message");
+
+    msg.innerText = message;
+
+}
+
+//==========================
+// コピー
+//==========================
+
+function copyOutput(id){
+
+    const text =
+        document.getElementById(id).innerText;
+
+    navigator.clipboard.writeText(text);
+
+    const message =
+        id==="output1"
+        ? "✅ 単日付帯率をコピーしました"
+        : "✅ 単日注力KPIをコピーしました";
+
+    showMessage(message);
+
+    setTimeout(function(){
+
+        showMessage("");
+
+    },2000);
+
+}
+
+//==========================
+// 入力クリア
+//==========================
+
+function clearInput(){
+
+    document.getElementById("input").value="";
+
+    document.getElementById("output1").innerText="計算待ち...";
+
+    document.getElementById("output2").innerText="計算待ち...";
+
+    showMessage("🗑 入力をクリアしました");
+
+    document.getElementById("input").focus();
+
+}
+
+//==========================
+// Part3で実装
+//==========================
+
+function makeOutput1(result,inputText){
+
+	const date =
+	inputText.match(/\d+\/\d+/)[0];
+
+    const time =
+	document.getElementById("reportTime").value;
+
+    let text = "";
+
+    text += date + "単日付帯率\n";
+    text += time + "時点\n\n";
+
+    for(const item of result){
+
+        text +=
+        "*" +
+        item.name +
+        "：" +
+        item.rate.toFixed(1) +
+        "%*\n";
+
+    }
+
+    text += "\n目標まで\n";
+
+    for (const item of result) {
+
+    if (item.remain > 0) {
+
+        text +=
+        "*"+item.name+"："+item.remain+"件*\n";
+
+    } else {
+
+        text +=
+        "*"+item.name+"：達成(+"+
+        Math.abs(item.remain)+"件)*\n";
+
+    }
+
+}
+
+    document
+    .getElementById("output1")
+    .innerText = text;
+
+}
+
+function makeOutput2(result,inputText){
+
+    const date =
+    inputText.match(/\d+\/\d+/)[0];
+
+    let text = "";
+
+    text += date + "単日注力KPI\n\n";
+
+    for(const item of result){
+
+        text +=
+        "*" +
+        item.name +
+        "：" +
+        item.actual +
+        "件(" +
+        item.rate.toFixed(1) +
+        "%)*\n";
+
+        if(item.gap < 0){
+
+            text +=
+            "→(目標との乖離：▲" +
+            Math.abs(item.gap).toFixed(1) +
+            "%)\n";
+
+        }
+        else{
+
+            text +=
+            "→(目標との乖離：+" +
+            item.gap.toFixed(1) +
+            "%)\n";
+
+        }
+
+        if(item.remain > 0){
+
+            text +=
+            "不足数：" +
+            item.remain +
+            "件";
+
+        }
+        else{
+
+            text +=
+            "達成：+" +
+            Math.abs(item.remain) +
+            "件 🎉";
+
+        }
+
+        text += "\n\n";
+
+    }
+
+    document
+    .getElementById("output2")
+    .innerText = text;
+
+}
+</script>
+
+</body>
+
+</html>
