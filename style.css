@@ -1,0 +1,86 @@
+/* ==========================
+   Daily KPI Dashboard v2.1
+   Created by kame2174
+========================== */
+
+body{
+
+    margin:20px;
+    background:#f5f5f5;
+    font-family:sans-serif;
+
+}
+
+h1{
+
+    text-align:center;
+    color:#1565C0;
+
+}
+
+.card{
+
+    background:white;
+    border-radius:12px;
+    padding:15px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+
+}
+
+h2{
+
+    margin-top:0;
+
+}
+
+button{
+
+    width:100%;
+    padding:14px;
+    font-size:17px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    margin-top:10px;
+
+}
+
+#calcBtn{
+
+    background:#1976D2;
+    color:white;
+
+}
+
+.copyBtn{
+
+    background:#43A047;
+    color:white;
+
+}
+
+/* KPI設定 */
+
+.kpiTable{
+
+    width:100%;
+    border-collapse:collapse;
+
+}
+
+.kpiTable th,
+.kpiTable td{
+
+    padding:10px;
+    border-bottom:1px solid #ddd;
+
+}
+
+.kpiTable input{
+
+    width:90px;
+    padding:6px;
+    font-size:16px;
+
+}
