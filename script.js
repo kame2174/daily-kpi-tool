@@ -46,6 +46,8 @@ window.addEventListener(
 
 function init(){
 
+    loadSetting();
+
     bindEvents();
 
     showMessage("Ready.");
@@ -133,13 +135,72 @@ function copyOutput(id){
 
 function saveSetting(){
 
-    showMessage("保存機能は次で実装します");
+    if(!document.getElementById("saveSetting").checked){
+
+        showMessage("保存をスキップしました");
+
+        return;
+
+    }
+
+    const kpi = [
+
+        {
+            name:"カケホ",
+            rate:Number(document.getElementById("rate0").value)
+        },
+
+        {
+            name:"最強保護",
+            rate:Number(document.getElementById("rate1").value)
+        },
+
+        {
+            name:"U-NEXT",
+            rate:Number(document.getElementById("rate2").value)
+        }
+
+    ];
+
+    localStorage.setItem(
+
+        APP.STORAGE_KEY,
+
+        JSON.stringify(kpi)
+
+    );
+
+    showMessage("✅ KPI設定を保存しました");
 
 }
 
 function resetSetting(){
 
-    showMessage("初期化機能は次で実装します");
+    document.getElementById("rate0").value=35;
+    document.getElementById("rate1").value=30;
+    document.getElementById("rate2").value=13;
+
+    localStorage.removeItem(APP.STORAGE_KEY);
+
+    showMessage("初期設定へ戻しました");
+
+}
+
+function loadSetting(){
+
+    const data = localStorage.getItem(APP.STORAGE_KEY);
+
+    if(data==null){
+
+        return;
+
+    }
+
+    const kpi = JSON.parse(data);
+
+    document.getElementById("rate0").value=kpi[0].rate;
+    document.getElementById("rate1").value=kpi[1].rate;
+    document.getElementById("rate2").value=kpi[2].rate;
 
 }
 
