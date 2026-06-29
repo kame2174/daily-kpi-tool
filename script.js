@@ -212,18 +212,43 @@ function clearInput(){
 
     UI.input.value="";
 
+    UI.output1.innerText="計算待ち...";
+
+    UI.output2.innerText="計算待ち...";
+
     showMessage("入力をクリアしました");
 
 }
 
-function copyOutput(id){
+function copyOutput(outputId){
 
     const text =
-        document.getElementById(id).innerText;
+        document.getElementById(outputId).innerText;
 
     navigator.clipboard.writeText(text);
 
-    showMessage("コピーしました");
+    const buttonId =
+        outputId === "output1"
+        ? "copyOutput1"
+        : "copyOutput2";
+
+    const button =
+        document.getElementById(buttonId);
+
+    const original =
+        button.innerText;
+
+    button.innerText = "✅ コピーしました！";
+    
+    button.classList.add("copySuccess");
+
+    setTimeout(function(){
+
+        button.innerText = original;
+        
+        button.classList.remove("copySuccess");
+
+    },800);
 
 }
 
