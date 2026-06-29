@@ -46,15 +46,15 @@ window.addEventListener(
 
 function init(){
 
-    loadSetting();
-
     bindEvents();
 
-    showMessage(
-        "Daily KPI Dashboard Ready."
-    );
+    showMessage("Ready.");
 
 }
+
+//======================================
+// イベント登録
+//======================================
 
 function bindEvents(){
 
@@ -99,5 +99,54 @@ function bindEvents(){
             "click",
             resetSetting
         );
+
+}
+
+//======================================
+// 仮処理
+//======================================
+
+function calc(){
+
+    showMessage("計算機能は実装中です");
+
+}
+
+function clearInput(){
+
+    document.getElementById("input").value="";
+
+    showMessage("入力をクリアしました");
+
+}
+
+function copyOutput(id){
+
+    const text =
+        document.getElementById(id).innerText;
+
+    navigator.clipboard.writeText(text);
+
+    showMessage("コピーしました");
+
+}
+
+function saveSetting(){
+
+    showMessage("保存機能は次で実装します");
+
+}
+
+function resetSetting(){
+
+    showMessage("初期化機能は次で実装します");
+
+}
+
+function showMessage(message){
+
+    document
+        .getElementById("message")
+        .innerText = message;
 
 }
