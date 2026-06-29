@@ -110,7 +110,26 @@ function bindEvents(){
 
 function calc(){
 
-    showMessage("計算機能は実装中です");
+    try{
+
+        const text =
+            document
+            .getElementById("input")
+            .value;
+
+        const sim =
+            getData(text,"SIM");
+
+        console.log(sim);
+
+        showMessage("解析成功！");
+
+    }
+    catch(e){
+
+        showMessage(e.message);
+
+    }
 
 }
 
@@ -183,6 +202,76 @@ function resetSetting(){
     localStorage.removeItem(APP.STORAGE_KEY);
 
     showMessage("初期設定へ戻しました");
+
+}
+
+function getData(text, name){
+
+    const targetMatch =
+        text.match(
+            new RegExp(name + "目標(\\d+)件")
+        );
+
+    const remainMatch =
+        text.match(
+            new RegExp(
+                name +
+                "目標\\d+件☆\\s*残([+]?\\d+)件"
+            )
+        );
+
+    if(!targetMatch){
+
+        throw new Error(
+            name + " が見つかりません"
+        );
+
+    }
+
+    if(!remainMatch){
+
+        throw new Error(
+            name + " が見つかりません"
+        );
+
+    }
+
+    const target =
+        Number(targetMatch[1]);
+
+    const remainText =
+        remainMatch[1];
+
+    let remain;
+    let actual;
+
+    if(remainText.startsWith("+")){
+
+        remain =
+            Number(remainText.substring(1));
+
+        actual =
+            target + remain;
+
+    }else{
+
+        remain =
+            Number(remainText);
+
+        actual =
+            target - remain;
+
+    }
+
+    return{
+
+        target,
+
+        remain,
+
+        actual
+
+    };
 
 }
 
