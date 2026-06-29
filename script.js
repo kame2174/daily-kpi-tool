@@ -35,6 +35,20 @@ const APP = {
 
 };
 
+const UI = {
+
+    input:null,
+
+    reportTime:null,
+
+    output1:null,
+
+    output2:null,
+
+    message:null
+
+};
+
 //======================================
 // 起動処理
 //======================================
@@ -45,6 +59,21 @@ window.addEventListener(
 );
 
 function init(){
+
+    UI.input =
+        document.getElementById("input");
+
+    UI.reportTime =
+        document.getElementById("reportTime");
+
+    UI.output1 =
+        document.getElementById("output1");
+
+    UI.output2 =
+        document.getElementById("output2");
+
+    UI.message =
+        document.getElementById("message");
 
     loadSetting();
 
@@ -120,9 +149,55 @@ function calc(){
         const sim =
             getData(text,"SIM");
 
-        console.log(sim);
+        const result=[];
 
-        showMessage("解析成功！");
+        APP.DEFAULT_KPI.forEach((item,index)=>{
+
+            const data =
+                getData(text,item.name);
+
+            const rate =
+                sim.actual===0
+                ?0
+                :data.actual/sim.actual*100;
+
+            const need =
+                Math.ceil(
+                    sim.actual*
+                    item.rate/
+                    100
+                );
+
+            const gap =
+                rate-item.rate;
+
+            result.push({
+
+                name:item.name,
+
+                target:data.target,
+
+                remain:data.remain,
+
+                actual:data.actual,
+
+                rate:rate,
+
+                targetRate:item.rate,
+
+                gap:gap,
+
+                need:need
+
+            });
+
+        });
+
+        makeOutput1(result,text);
+
+		makeOutput2(result,text);
+
+		showMessage("計算完了");
 
     }
     catch(e){
@@ -135,7 +210,7 @@ function calc(){
 
 function clearInput(){
 
-    document.getElementById("input").value="";
+    UI.input.value="";
 
     showMessage("入力をクリアしました");
 
@@ -295,8 +370,123 @@ function loadSetting(){
 
 function showMessage(message){
 
-    document
-        .getElementById("message")
-        .innerText = message;
+    UI.message.innerText=message;
+
+}
+
+function makeOutput1(result,text){
+
+    const date =
+        text.match(/\d+\/\d+/)[0];
+
+    const time =
+        UI.reportTime.value;
+
+    let output = "";
+
+    output += date + "単日付帯率\n";
+    output += time + "時点\n\n";
+
+    result.forEach(item=>{
+
+        output +=
+            "*" +
+            item.name +
+            "：" +
+            item.rate.toFixed(1) +
+            "%*\n";
+
+    });
+
+    output += "\n残数\n";
+
+    result.forEach(item=>{
+
+        if(item.actual > item.target){
+
+            output +=
+                "*" +
+                item.name +
+                "：+" +
+                (item.actual-item.target) +
+                "件*\n";
+
+        }else{
+
+            output +=
+                "*" +
+                item.name +
+                "：" +
+                item.remain +
+                "件*\n";
+
+        }
+
+    });
+
+    UI.output1.innerText=output;
+
+}
+
+function makeOutput2(result,text){
+
+    const date =
+        text.match(/\d+\/\d+/)[0];
+
+    let output="";
+
+    output += date + "単日注力KPI\n\n";
+
+    result.forEach(item=>{
+
+        output +=
+            "*" +
+            item.name +
+            "：" +
+            item.actual +
+            "件(" +
+            item.rate.toFixed(1) +
+            "%)*\n";
+
+        if(item.gap<0){
+
+            output +=
+                "→(目標との乖離：▲" +
+                Math.abs(item.gap).toFixed(1) +
+                "%)\n";
+
+        }else{
+
+            output +=
+                "→(目標との乖離：+" +
+                item.gap.toFixed(1) +
+                "%)\n";
+
+        }
+
+        const lack =
+            item.need-item.actual;
+
+        if(lack>0){
+
+            output +=
+                "不足数：" +
+                lack +
+                "件";
+
+        }else{
+
+            output +=
+                "達成：+" +
+                Math.abs(lack) +
+                "件";
+
+        }
+
+        output += "\n\n";
+
+    });
+
+    UI.output2.innerText=output;
 
 }
