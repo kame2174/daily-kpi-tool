@@ -1,6 +1,6 @@
 /* =====================================
    Daily KPI Dashboard
-   Version 2.1.0
+   Version 3.1.0
    Created by kame2174
 ===================================== */
 
@@ -10,30 +10,41 @@
 
 const APP = {
 
-    VERSION: "2.1.0",
+    VERSION: "3.1.0",
 
     STORAGE_KEY: "daily-kpi-dashboard",
+    
+    DEFAULT_SETTING: {
 
-    DEFAULT_KPI: [
+    baseName: "",
+
+    kpis: [
 
         {
-            name: "カケホ",
-            rate: 35
+            name: "",
+            rate: 0
         },
 
         {
-            name: "最強保護",
-            rate: 30
+            name: "",
+            rate: 0
         },
 
         {
-            name: "U-NEXT",
-            rate: 13
+            name: "",
+            rate: 0
         }
 
     ]
 
+}
+
 };
+
+let setting =
+    structuredClone(
+        APP.DEFAULT_SETTING
+    );
 
 const UI = {
 
@@ -45,7 +56,13 @@ const UI = {
 
     output2:null,
 
-    message:null
+    message:null,
+    
+    kpiTableBody:null,
+
+	baseName:null,
+
+	addKpiBtn:null,
 
 };
 
@@ -74,6 +91,20 @@ function init(){
 
     UI.message =
         document.getElementById("message");
+        
+    UI.baseName =
+    	document.getElementById("baseName");
+
+	UI.kpiTableBody =
+	    document.getElementById("kpiTableBody");
+
+	UI.addKpiBtn =
+	    document.getElementById("addKpiBtn");
+	    
+	UI.saveSetting =
+    document.getElementById("saveSetting");
+	    
+	renderKpiTable();
 
     loadSetting();
 
@@ -130,6 +161,200 @@ function bindEvents(){
             "click",
             resetSetting
         );
+        
+    document
+    	.getElementById("addKpiBtn")
+    	.addEventListener(
+    	    "click",
+    	    addKpi
+    	);
+    	
+    UI.baseName.addEventListener(
+    "input",
+    updateBaseName
+    
+);
+
+}
+
+//======================================
+// KPI設定画面描画
+//======================================
+
+function renderKpiTable(){
+
+    UI.kpiTableBody.innerHTML = "";
+
+    setting.kpis.forEach((item,index)=>{
+
+        const row = `
+
+<tr>
+
+<td>
+
+<input
+    id="name${index}"
+    class="kpiName"
+    data-index="${index}"
+    type="text"
+    value="${item.name}"
+    placeholder="項目名">
+
+</td>
+
+<td>
+
+<input
+    id="rate${index}"
+    class="kpiRate"
+    data-index="${index}"
+    type="number"
+    value="${item.rate}">
+
+</td>
+
+<td>
+
+<button
+    class="deleteBtn"
+    data-index="${index}">
+
+🗑
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+        UI.kpiTableBody.innerHTML += row;
+
+    });
+
+document
+    .querySelectorAll(".deleteBtn")
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            deleteKpi
+        );
+
+    });
+    
+document
+    .querySelectorAll(".kpiName")
+    .forEach(input => {
+
+        input.addEventListener(
+            "input",
+            updateKpiName
+        );
+
+    });
+
+document
+    .querySelectorAll(".kpiRate")
+    .forEach(input => {
+
+        input.addEventListener(
+            "input",
+            updateKpiRate
+        );
+
+    });
+    
+}
+
+//======================================
+// KPI削除
+//======================================
+
+function deleteKpi(event){
+
+    if(setting.kpis.length <= 1){
+
+        showMessage(
+            "KPIは1件以上必要です"
+        );
+
+        return;
+
+    }
+
+    const index = Number(
+        event.currentTarget.dataset.index
+    );
+
+    setting.kpis.splice(index,1);
+
+    renderKpiTable();
+
+    showMessage(
+        "KPIを削除しました"
+    );
+
+}
+
+//======================================
+// 基準項目同期
+//======================================
+
+function updateBaseName(event){
+
+    setting.baseName =
+        event.currentTarget.value;
+
+}
+
+//======================================
+// KPI同期
+//======================================
+
+function updateKpiName(event){
+
+    const index = Number(
+        event.currentTarget.dataset.index
+    );
+
+    setting.kpis[index].name =
+        event.currentTarget.value;
+
+}
+
+function updateKpiRate(event){
+
+    const index = Number(
+        event.currentTarget.dataset.index
+    );
+
+    setting.kpis[index].rate =
+        Number(
+            event.currentTarget.value
+        );
+        
+}
+
+//======================================
+// KPI設定編集
+//======================================
+
+function addKpi(){
+
+    setting.kpis.push({
+
+        name:"",
+
+        rate:0
+
+    });
+
+    renderKpiTable();
+    
+    showMessage("KPIを追加しました");
 
 }
 
@@ -151,7 +376,7 @@ function calc(){
 
         const result=[];
 
-        APP.DEFAULT_KPI.forEach((item,index)=>{
+        setting.kpis.forEach((item,index)=>{
 
             const data =
                 getData(text,item.name);
@@ -254,7 +479,7 @@ function copyOutput(outputId){
 
 function saveSetting(){
 
-    if(!document.getElementById("saveSetting").checked){
+    if(!UI.saveSetting.checked){
 
         showMessage("保存をスキップしました");
 
@@ -262,30 +487,11 @@ function saveSetting(){
 
     }
 
-    const kpi = [
-
-        {
-            name:"カケホ",
-            rate:Number(document.getElementById("rate0").value)
-        },
-
-        {
-            name:"最強保護",
-            rate:Number(document.getElementById("rate1").value)
-        },
-
-        {
-            name:"U-NEXT",
-            rate:Number(document.getElementById("rate2").value)
-        }
-
-    ];
-
     localStorage.setItem(
 
         APP.STORAGE_KEY,
 
-        JSON.stringify(kpi)
+        JSON.stringify(setting)
 
     );
 
@@ -295,13 +501,23 @@ function saveSetting(){
 
 function resetSetting(){
 
-    document.getElementById("rate0").value=35;
-    document.getElementById("rate1").value=30;
-    document.getElementById("rate2").value=13;
+    setting =
+        structuredClone(
+            APP.DEFAULT_SETTING
+        );
 
-    localStorage.removeItem(APP.STORAGE_KEY);
+    UI.baseName.value =
+        setting.baseName;
 
-    showMessage("初期設定へ戻しました");
+    renderKpiTable();
+
+    localStorage.removeItem(
+        APP.STORAGE_KEY
+    );
+
+    showMessage(
+        "初期設定へ戻しました"
+    );
 
 }
 
@@ -385,11 +601,13 @@ function loadSetting(){
 
     }
 
-    const kpi = JSON.parse(data);
+    const settingData = JSON.parse(data);
 
-    document.getElementById("rate0").value=kpi[0].rate;
-    document.getElementById("rate1").value=kpi[1].rate;
-    document.getElementById("rate2").value=kpi[2].rate;
+	setting = settingData;
+
+	UI.baseName.value = setting.baseName;
+
+	renderKpiTable();
 
 }
 
@@ -401,8 +619,19 @@ function showMessage(message){
 
 function makeOutput1(result,text){
 
-    const date =
-        text.match(/\d+\/\d+/)[0];
+    const dateMatch =
+    	text.match(/\d+\/\d+/);
+
+	if(!dateMatch){
+
+    	throw new Error(
+        	"日付が見つかりません"
+    	);
+
+	}
+
+	const date =
+    	dateMatch[0];
 
     const time =
         UI.reportTime.value;
@@ -515,3 +744,4 @@ function makeOutput2(result,text){
     UI.output2.innerText=output;
 
 }
+

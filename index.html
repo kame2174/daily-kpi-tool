@@ -24,7 +24,7 @@
     <h1>📊 Daily KPI Dashboard</h1>
 
     <p class="version">
-        Version 2.1.1
+        Version 3.1.0
     </p>
 
 </header>
@@ -37,44 +37,46 @@
 
     <h2>⚙ KPI設定</h2>
 
-    <table class="kpiTable">
+    <label>
 
-        <tr>
-            <th>項目名</th>
-            <th>目標率 (%)</th>
-        </tr>
+	基準項目
 
-        <tr>
-            <td>カケホ</td>
-            <td>
-                <input
-                    id="rate0"
-                    type="number"
-                    value="35">
-            </td>
-        </tr>
+	</label>
 
-        <tr>
-            <td>最強保護</td>
-            <td>
-                <input
-                    id="rate1"
-                    type="number"
-                    value="30">
-            </td>
-        </tr>
+	<input
+	    id="baseName"
+	    type="text"
+	    placeholder="例：販売数">
 
-        <tr>
-            <td>U-NEXT</td>
-            <td>
-                <input
-                    id="rate2"
-                    type="number"
-                    value="13">
-            </td>
-        </tr>
+	<br><br>
 
-    </table>
+	<table class="kpiTable">
+
+	    <thead>
+
+	        <tr>
+
+	            <th>項目名</th>
+
+	            <th>目標率 (%)</th>
+
+	            <th></th>
+
+	        </tr>
+
+	    </thead>
+
+	    <tbody id="kpiTableBody">
+
+	    </tbody>
+
+	</table>
+
+	<button id="addKpiBtn">
+
+	➕ 項目を追加
+
+	</button>
 
     <label class="saveOption">
 
@@ -100,7 +102,7 @@
         🔄 初期設定へ戻す
 
     </button>
-
+    
 </section>
 
 <!-- ====================================== -->
@@ -207,7 +209,7 @@
 
     <br>
 
-    Version 2.1.1
+    Version 3.1.0
 
     <br>
 
